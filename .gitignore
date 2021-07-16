@@ -1,0 +1,5 @@
+generated-src
+.gradle
+.idea
+build
+**/.DS_Store
