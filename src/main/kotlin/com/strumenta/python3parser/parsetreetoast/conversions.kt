@@ -5,6 +5,7 @@ import com.strumenta.kolasu.mapping.toPosition
 import com.strumenta.python3parser.Python3Lexer
 import com.strumenta.python3parser.Python3Parser
 import com.strumenta.python3parser.ast.*
+import com.strumenta.python3parser.ast.CompilationUnit
 import org.antlr.v4.runtime.tree.TerminalNode
 
 private val Python3Parser.TrailerContext.isInvocation: Boolean
@@ -288,9 +289,14 @@ private fun Python3Parser.Atom_exprContext.toAst(considerPosition: Boolean = tru
 
 private fun Python3Parser.AtomContext.toAst(considerPosition: Boolean = true): Expression {
     return when {
-        this.NUMBER() != null -> NumberLiteral(this.NUMBER().text)
-        this.STRING().size == 1 -> StringLiteral(this.STRING(0).text)
-        this.NAME() != null -> ReferenceExpression(this.NAME().text)
+        this.NUMBER() != null -> NumberLiteral(this.NUMBER().text, toPosition(considerPosition))
+        this.STRING().size == 1 -> StringLiteral(this.STRING(0).text, toPosition(considerPosition))
+        this.NAME() != null -> ReferenceExpression(this.NAME().text, toPosition(considerPosition))
+        this.OPEN_BRACK() != null -> ArrayLiteral(this.testlist_comp().test().map { it.toAst(considerPosition) }, toPosition(considerPosition))
+        this.OPEN_PAREN() != null -> TupleExpression(this.testlist_comp().test().map { it.toAst(considerPosition) }, toPosition(considerPosition))
+        this.NONE() != null -> NoneLiteral(toPosition(considerPosition))
+        this.TRUE() != null -> BooleanLiteral(true, toPosition(considerPosition))
+        this.FALSE() != null -> BooleanLiteral(false, toPosition(considerPosition))
         else -> TODO("Cannot convert: ${this.text}")
     }
 }
