@@ -1,8 +1,5 @@
 package com.strumenta.python3parser
 
-import com.strumenta.kolasu.testing.assertASTsAreEqual
-import com.strumenta.python3parser.ast.CompilationUnit
-import com.strumenta.python3parser.ast.HelloStmt
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -17,6 +14,6 @@ class Python3KolasuParserTest {
         )
         assertEquals(true, result.correct)
         assertEquals(true, result.issues.isEmpty())
-        assertASTsAreEqual(CompilationUnit(listOf(HelloStmt("John"))), result.root!!)
+        TODO()
     }
 }
