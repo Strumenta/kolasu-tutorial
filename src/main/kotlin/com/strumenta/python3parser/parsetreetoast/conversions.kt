@@ -286,6 +286,15 @@ private fun Python3Parser.Atom_exprContext.toAst(considerPosition: Boolean = tru
     return processTrailers(this.atom().toAst(considerPosition), this.trailer())
 }
 
+private fun Python3Parser.AtomContext.toAst(considerPosition: Boolean = true): Expression {
+    return when {
+        this.NUMBER() != null -> NumberLiteral(this.NUMBER().text)
+        this.STRING().size == 1 -> StringLiteral(this.STRING(0).text)
+        this.NAME() != null -> ReferenceExpression(this.NAME().text)
+        else -> TODO("Cannot convert: ${this.text}")
+    }
+}
+
 private fun Python3Parser.TrailerContext.toAst(currentExpr: Expression, considerPosition: Boolean = true): Expression {
     return when {
         this.OPEN_PAREN() != null -> {
@@ -308,48 +317,4 @@ private fun Python3Parser.ArgumentContext.toAst(considerPosition: Boolean = true
         return ParameterAssignment(this.test()[1].toAst(considerPosition), this.test()[0].text, toPosition(considerPosition))
     }
     return ParameterAssignment(this.test()[0].toAst(considerPosition), null, toPosition(considerPosition))
-}
-
-private fun Python3Parser.AtomContext.toAst(considerPosition: Boolean = true): Expression {
-    return when {
-        this.NUMBER() != null -> NumberLiteral(this.NUMBER().text, toPosition(considerPosition))
-        this.OPEN_BRACK() != null -> {
-            return ArrayLiteral(this.testlist_comp()?.toAst(considerPosition) ?: emptyList())
-        }
-        this.NAME() != null -> {
-            return ReferenceExpression(this.NAME().text, toPosition(considerPosition))
-        }
-        this.TRUE() != null -> {
-            return BooleanLiteral(true, toPosition(considerPosition))
-        }
-        this.FALSE() != null -> {
-            return BooleanLiteral(false, toPosition(considerPosition))
-        }
-        this.STRING().size == 1 -> {
-            return StringLiteral(this.STRING()[0].text, toPosition(considerPosition))
-        }
-        this.OPEN_PAREN() != null -> {
-            return if (this.yield_expr() != null) {
-                this.yield_expr().toAst(considerPosition)
-            } else if (this.testlist_comp() != null) {
-                TupleExpression(this.testlist_comp().toAst(considerPosition), toPosition(considerPosition))
-            } else {
-                TupleExpression(emptyList(), toPosition(considerPosition))
-            }
-        }
-        this.NONE() != null -> {
-            return NoneLiteral(toPosition(considerPosition))
-        }
-        else -> TODO("Cannot convert: ${this.text}")
-    }
-}
-
-private fun Python3Parser.Testlist_compContext.toAst(considerPosition: Boolean = true): List<Expression> {
-    if (this.comp_for() != null) {
-        TODO("Cannot convert: ${this.text}")
-    }
-    if (this.star_expr().size != 0) {
-        TODO("Cannot convert: ${this.text}")
-    }
-    return this.test().map { it.toAst(considerPosition) }
 }
