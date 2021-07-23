@@ -1,10 +1,12 @@
 package com.strumenta.python3parser
 
+import com.strumenta.kolasu.model.walkDescendants
 import com.strumenta.kolasu.testing.IgnoreChildren
 import com.strumenta.kolasu.testing.assertASTsAreEqual
 import com.strumenta.python3parser.ast.*
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class Python3KolasuParserTest {
 
@@ -131,5 +133,29 @@ class Python3KolasuParserTest {
             ),
             result.root!!
         )
+    }
+
+    @Test
+    fun parseStatementsInGeneratePlatesSimulation() {
+        val kolasuParser = Python3KolasuParser()
+        val result = kolasuParser.parse(this.javaClass.getResourceAsStream("/plates.py"), considerPosition = false)
+        val generatePlatesSimulation = result.root!!.topLevelFunctions.find { it.name == "generate_plates_simulation" }
+        assertNotNull(generatePlatesSimulation)
+        assertEquals(7, generatePlatesSimulation.body.size)
+    }
+
+    @Test
+    fun distinguishParameterReference() {
+        val kolasuParser = Python3KolasuParser()
+        val result = kolasuParser.parse(this.javaClass.getResourceAsStream("/params_usage.py"), considerPosition = false)
+        val fun2 = result.root!!.topLevelFunctions.find { it.name == "fun2" }
+        assertNotNull(fun2)
+        val assignments = fun2.walkDescendants(AssignmentExpression::class).toList()
+
+        assertEquals("a", (assignments[0].assigned as ReferenceExpression).reference)
+        assertEquals(true, (assignments[0].value as ReferenceExpression).isParameterReference)
+
+        assertEquals("b", (assignments[1].assigned as ReferenceExpression).reference)
+        assertEquals(false, (assignments[1].value as ReferenceExpression).isParameterReference)
     }
 }
