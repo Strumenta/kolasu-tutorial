@@ -2,6 +2,7 @@ package com.strumenta.python3parser
 
 import com.strumenta.kolasu.parsing.KolasuParser
 import com.strumenta.python3parser.ast.CompilationUnit
+import com.strumenta.python3parser.parsetreetoast.toAst
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.Lexer
 import org.antlr.v4.runtime.TokenStream
@@ -22,6 +23,6 @@ class Python3KolasuParser : KolasuParser<CompilationUnit, Python3Parser, Python3
     }
 
     override fun parseTreeToAst(parseTreeRoot: Python3Parser.File_inputContext, considerPosition: Boolean): CompilationUnit? {
-        TODO()
+        return parseTreeRoot.toAst(considerPosition)
     }
 }
